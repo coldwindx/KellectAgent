@@ -30,7 +30,7 @@ void ElasticOutPut::output(std::string outputString) {
     //char* msg = outputString.c_str();
     if (!initialized())
     {
-        MyLogger::writeLog("SocketOutPut is not initialized.\n");
+        MyLogger::writeLog("ElasticOutPut is not initialized.\n");
     }
     if (0 == outputString.size()) return;
 
@@ -51,7 +51,7 @@ void ElasticOutPut::output(std::string outputString) {
     }
 
     struct curl_slist* headers = NULL;
-    headers = curl_slist_append(headers, "Content-Type: application/json");
+    headers = curl_slist_append(headers, "Content-Type: application/json;charset=UTF-8");
 
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
@@ -64,12 +64,12 @@ void ElasticOutPut::output(std::string outputString) {
     CURLcode res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
         std::string err = "[-] curl_easy_perform() failed: " + std::string(curl_easy_strerror(res)) + "\n";
-        MyLogger::error(err);
+        MyLogger::writeLog(err);
     }
 
     nlohmann::json js = nlohmann::json::parse(responseStr);
     if (js.at("errors")) {
-        MyLogger::error(responseStr);
+        MyLogger::writeLog(responseStr);
     }
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
@@ -100,55 +100,7 @@ STATUS ElasticOutPut::init() {
     conf.close();
 
     curl_global_init(CURL_GLOBAL_ALL);
-    CURL* curl = curl_easy_init();
-    struct curl_slist* headers = NULL;
-    headers = curl_slist_append(headers, "Content-Type: application/json");
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_USERPWD, "elastic:bupthtles");
-    // create elastic index
-    std::string url = "http://" + this->ip_port + "/" + _index;
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    std::string body = "{\"settings\":{\"refresh_interval\":\"300s\",\"number_of_shards\":\"5\",\"merge\":{\"scheduler\":{\"max_thread_count\":\"100\"},\"policy\":{\"segments_per_tier\":\"5\",\"max_merged_segment\":\"100mb\"}},\"max_result_window\":\"50000\",\"number_of_replicas\":\"1\"}}";
-    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, body.size());
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-    CURLcode res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-        std::string err = "[-] curl_easy_perform() failed: " + std::string(curl_easy_strerror(res)) + "\n";
-        MyLogger::error(err);
-    }
-    curl_easy_cleanup(curl);
-    // create elastic index mapping
-    url = url + "/_mapping";
-    curl = curl_easy_init();
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_USERPWD, "elastic:bupthtles");
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-
-    nlohmann::json js;
-    js["dynamic"] = true;
-    js["properties"]["Event"]["type"] = "text";
-    js["properties"]["PID"]["type"] = "long";
-    js["properties"]["PName"]["type"] = "text";
-    js["properties"]["PPID"]["type"] = "long";
-    js["properties"]["PPName"]["type"] = "text";
-    js["properties"]["TID"]["type"] = "long";
-    js["properties"]["TimeStamp"]["type"] = "long";
-    js["properties"]["Host-UUID"]["type"] = "text";
-    js["properties"]["args"]["type"] = "text";
-    body = js.dump();
-
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, body.size());
-
-    res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-        std::string err = "[-] curl_easy_perform() failed: " + std::string(curl_easy_strerror(res)) + "\n";
-        MyLogger::error(err);
-    }
-    curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
+    setInit(true);
     return STATUS_SUCCESS;
 
 }

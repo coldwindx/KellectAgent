@@ -84,7 +84,7 @@ dataType* BaseEvent::getProperty(int propertyNameIndex) {
 
 		propertyName = "unknownProperty";
 		properties.insert(std::map <std::string, dataType*>::value_type(propertyName, nullptr));
-		MyLogger::writeLog("can not find propertyName\n");
+		//MyLogger::writeLog("can not find propertyName\n");
 	}
 
 	return this->properties[propertyName];
