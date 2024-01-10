@@ -45,7 +45,7 @@ int KafkaOutPut::init() {
 }
 
 void KafkaOutPut::output(std::string outputString){
-
+    
     if (outputString.empty()) {
         producer->poll(0);
         return;

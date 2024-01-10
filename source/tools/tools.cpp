@@ -35,13 +35,17 @@ std::wstring Tools::StringToWString(LPCSTR cs)
 
 }
 
+//int Tools::String2Int(const std::string& s) {
+//
+//    int res = -1;
+//    std::stringstream stream(s);
+//    stream >> res;
+//
+//    return res;
+//}
+
 int Tools::String2Int(const std::string& s) {
-
-    int res = -1;
-    std::stringstream stream(s);
-    stream >> res;
-
-    return res;
+    return std::stoi(s);
 }
 
 std::string Tools::DecInt2HexStr(ULONG64 num)

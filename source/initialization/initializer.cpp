@@ -639,7 +639,15 @@ ULONG64 Initializer::init() {
         ZeroMemory(currentArv, sizeof(argV[i]));
         strcpy(currentArv, argV[i++]);
 
-        if (strcmp(currentArv, "-c") == 0 && !outputInited) {
+        if (strcmp(currentArv, "-elastic") == 0 && !outputInited) {
+            if (!validArgLength(i, status))   break;
+            std::string arg = argV[i++];
+            EventParser::op = new ElasticOutPut(arg);
+            status = EventParser::op->init();
+            if (status != STATUS_SUCCESS)   break;
+            outputInited = true;
+        }
+        else if (strcmp(currentArv, "-c") == 0 && !outputInited) {
 
             EventParser::op = new ConsoleOutPut();
             status = EventParser::op->init();

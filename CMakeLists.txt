@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(kellect)
 ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN) #preprocess to avoid duplicate macro definition
+add_definitions( -DCURL_STATICLIB )
 
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")

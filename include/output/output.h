@@ -1,5 +1,6 @@
 #pragma once
 #include <WinSock2.h>
+#include <curl/curl.h>
 #include "initialization/initializer.h"
 #include "tools/ConcurrentQueue.h"
 
@@ -104,5 +105,21 @@ private:
 	//SOCKADDR_IN addr_clie = { 0 };
 
 	int sendLen;
+};
+
+class ElasticOutPut : public Output {
+public:
+	ElasticOutPut(std::string ip_port) {
+		this->ip_port = ip_port;
+	};
+	~ElasticOutPut()
+	{
+		curl_global_cleanup();
+	}
+	virtual void output(std::string outputString) override;
+	virtual STATUS init() override;
+
+private:
+
 };
 

@@ -3,6 +3,7 @@
 #include "tools/tools.h"
 #include <regex>
 #include <exception> 
+#include <curl/curl.h>
 
 void FileOutPut::output(std::string outputString) {
 
@@ -10,7 +11,7 @@ void FileOutPut::output(std::string outputString) {
     {
         MyLogger::writeLog("FileOutPut is not initialized.\n");
     }
-
+    
     outputStream << outputString;
 }
 
@@ -160,4 +161,62 @@ void Output::outputStrings(){
 
         output(resJson);
     }
+}
+
+void ElasticOutPut::output(std::string outputString) {
+    //char* msg = outputString.c_str();
+    if (!initialized())
+    {
+        MyLogger::writeLog("SocketOutPut is not initialized.\n");
+    }
+    if (0 == outputString.size()) return;
+
+    CURL* curl = curl_easy_init();
+    if (curl == NULL) {
+        MyLogger::writeLog("open curl failed...");
+        return;
+    }
+
+    std::string url = "http://" + this->ip_port + "/index/_bulk";
+    std::stringstream ss;
+    ss << outputString;
+    
+    std::string body, s;
+    while (std::getline(ss, s, '\n')) {
+        if (0 == s.size()) continue;
+        body += std::string("{\"index\":{}}\n") + s + "\n";
+    }    
+
+    struct curl_slist* headers = NULL;
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_USERPWD, "elastic:bupthtles");
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+    
+    CURLcode res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+        std::string err = "[-] curl_easy_perform() failed: " + std::string(curl_easy_strerror(res)) + "\n";
+        MyLogger::writeLog(err);
+    }
+    curl_easy_cleanup(curl);
+}
+
+STATUS ElasticOutPut::init() {
+
+    STATUS status = this->parseIPAndPort();
+
+    if (status != STATUS_SUCCESS)
+        return status;
+
+    WSADATA ws;
+    if (WSAStartup(MAKEWORD(2, 2), &ws) != 0) {
+        std::cout << "load library socket failed..." << std::endl;
+        system("pause");
+    }
+
+    curl_global_init(CURL_GLOBAL_ALL);
+    return STATUS_SUCCESS;
+
 }
