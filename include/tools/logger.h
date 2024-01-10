@@ -17,6 +17,7 @@ public:
 	static void initLogger(std::string confile = "config/log.conf");
 
 	static void writeLog(std::string msg);
+	static void error(std::string msg);
 private:
 
 	MyLogger() {}

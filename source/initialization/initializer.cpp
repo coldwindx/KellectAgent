@@ -10,6 +10,7 @@
 #include "tools/providerInfo.h"
 #include "tools/tinyxml2.h"
 #include "output/KafkaOutput.h"
+#include "output/ElasticOutput.h"
 
 INITIALIZE_EASYLOGGINGPP
 using namespace std;
